@@ -122,6 +122,9 @@ def main():
         parser.print_help()
         exit(1)
 
+    if output_file:
+        print "The analysis output was written to: %s" % options.output
+
 
 if __name__ == '__main__':
     main()
