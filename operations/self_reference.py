@@ -74,13 +74,15 @@ def process(citations_file, output=None, plot=False):
         pygal = __import__('pygal')
 
         base_filename = os.path.splitext(citations_file[0])[0]
+        overall_filename = base_filename + "-self-overall.svg"
 
         # Overall references
         chart = pygal.Pie()
         chart.title = "Total Number of Self and External References"
         chart.add('Self-Reference', analyzer.get_total_in_year(True))
         chart.add('External Reference', analyzer.get_total_in_year(False))
-        chart.render_to_file(base_filename + "-self-overall.svg")
+        chart.render_to_file(overall_filename)
+        print "Total Number of Self and External References generated in: %s" % overall_filename
 
         # Overall per year
         chart = pygal.StackedBar()
@@ -124,6 +126,7 @@ def _generate_per_year_per_type_chart(pygal, analyzer, filename, is_self):
     chart.add('Master Thesis', analyzer.get_entry_type_per_year(is_self, entry.EntryType.MASTERTHESIS))
     chart.add('Proceedings', analyzer.get_entry_type_per_year(is_self, entry.EntryType.PROCEEDINGS))
     chart.render_to_file(filename)
+    print "Distribution of %s per Year generated in: %s" % (title_name, filename)
 
 
 class Analyzer:
@@ -201,7 +204,8 @@ class Analyzer:
         values = []
         for year in range(self.initial_year, self.current_year + 1):
             total = float(self._get_total(type_dict, year))
-            values.append((type_dict[year][entry_type] / total) * 100)
+            if total > 0:
+                values.append((type_dict[year][entry_type] / total) * 100)
         return values
 
     def _get_total(self, type_dict, year):
