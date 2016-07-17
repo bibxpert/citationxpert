@@ -133,33 +133,40 @@ def parse_bib_entry(data, num_citations=None, url=None):
                 values[key] = value
 
 
-def load_authors(authors_file):
+def load_authors(list_of_files):
     """
 
-    :param authors_file:
+    :param list_of_files: list of authors files
     :return: list of authors
     """
     authors = []
     author = {}
-    with open(authors_file) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("@author"):
-                author = {}
-            elif line.startswith("}"):
-                authors.append(_create_author(author))
-            elif len(line) > 0:
-                s = re.split("=\s*\"|=\s*\{|=\s*", line)
-                key = s[0].strip().lower()
-                value = s[1].strip()
-                if value.startswith("{") or value.startswith("\""):
-                    value = value[1:len(value)]
-                if value.endswith("}") or value.endswith("\"") or value.endswith(","):
-                    value = value[0:len(value) - 1]
-                if value.endswith("},") or value.endswith("\","):
-                    value = value[0:len(value) - 2]
-                value = re.sub("{|\"|}", "", value)
-                author[key] = value
+
+    for authors_file in list_of_files:
+        with open(authors_file) as f:
+            for line in f:
+                line = line.strip()
+
+                if line.startswith("@author"):
+                    author = {}
+
+                elif line.startswith("}"):
+                    author_obj = _create_author(author)
+                    if author_obj not in authors:
+                        authors.append(author_obj)
+
+                elif len(line) > 0:
+                    s = re.split("=\s*\"|=\s*\{|=\s*", line)
+                    key = s[0].strip().lower()
+                    value = s[1].strip()
+                    if value.startswith("{") or value.startswith("\""):
+                        value = value[1:len(value)]
+                    if value.endswith("}") or value.endswith("\"") or value.endswith(","):
+                        value = value[0:len(value) - 1]
+                    if value.endswith("},") or value.endswith("\","):
+                        value = value[0:len(value) - 2]
+                    value = re.sub("{|\"|}", "", value)
+                    author[key] = value
 
     return authors
 

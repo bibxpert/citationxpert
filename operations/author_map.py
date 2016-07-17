@@ -38,7 +38,9 @@ def process(authors_file, output=None):
         exit(1)
     pygal = __import__('pygal')
 
+    log.debug("Loading list of authors.")
     authors_list = loader.load_authors(authors_file)
+    log.debug("Loaded %s authors." % len(authors_list))
 
     # remove duplicated entries
     authors = []
@@ -60,11 +62,13 @@ def process(authors_file, output=None):
         else:
             countries_count[author.country_code] = 1
 
-    base_filename = os.path.splitext(authors_file)[0]
+    base_filename = os.path.splitext(authors_file[0])[0]
+    map_filename = base_filename + "-authorsmap.svg"
 
     config = pygal.Config()
     config.show_legend = False
     chart = pygal.maps.world.World(config)
     chart.title = 'Authors per Country'
     chart.add('Authors', countries_count)
-    chart.render_to_file(base_filename + "-authorsmap.svg")
+    chart.render_to_file(map_filename)
+    print "Authors Map generated in: %s" % map_filename
