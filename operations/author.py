@@ -59,6 +59,8 @@ def process(citations_file, output=None, plot=False):
         log.error("The citations file has no valid entries.")
         exit(1)
 
+    log.debug("Loaded %s main publications, and %s citation entries." % (len(publication_entries), len(entries)))
+
     # oldest publication year
     minor_year = date.today().year
     pe_authors_list = []
@@ -135,6 +137,7 @@ def process(citations_file, output=None, plot=False):
         pygal = __import__('pygal')
 
         base_filename = os.path.splitext(citations_file[0])[0]
+        gauge_filename = base_filename + "-author-num.svg"
 
         config = pygal.Config()
         config.show_legend = False
@@ -142,7 +145,8 @@ def process(citations_file, output=None, plot=False):
                                  half_pie=True, inner_radius=0.70,
                                  style=pygal.style.styles['default'](value_font_size=10))
         chart.add('', [{'value': len(gs_authors), 'max_value': len(analyzer.all_authors)}])
-        chart.render_to_file(base_filename + "-author-num.svg")
+        chart.render_to_file(gauge_filename)
+        print "Number of authors having Google Scholar profile generated in: %s" % gauge_filename
 
 
 class Analyzer:
