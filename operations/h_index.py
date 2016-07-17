@@ -76,6 +76,7 @@ def process(citations_file, output=None, plot=False):
         pygal = __import__('pygal')
 
         base_filename = os.path.splitext(citations_file[0])[0]
+        h_index_filename = base_filename + "-hindex.svg"
 
         config = pygal.Config()
         config.show_legend = False
@@ -83,7 +84,8 @@ def process(citations_file, output=None, plot=False):
         chart.title = "h-index Evolution per Year"
         chart.x_labels = map(str, analyzer.get_years())
         chart.add('h-index', analyzer.get_yearly_indexes())
-        chart.render_to_file(base_filename + "-hindex.svg")
+        chart.render_to_file(h_index_filename)
+        print "h-index Evolution per Year generated in: %s" % h_index_filename
 
 
 class Analyzer:
