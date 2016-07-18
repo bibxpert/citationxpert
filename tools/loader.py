@@ -190,6 +190,8 @@ def _create_author(author_dict):
         author.country_code = author_dict['country_code']
     if 'citations' in author_dict and author_dict['citations']:
         author.citations = author_dict['citations']
+    if 'keywords' in author_dict and author_dict['keywords']:
+        author.keywords = author_dict['keywords']
 
     return author
 
