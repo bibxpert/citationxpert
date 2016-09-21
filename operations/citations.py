@@ -26,60 +26,64 @@ from tools import utils
 log = logging.getLogger(__name__)
 
 
-def process(publication, output=None):
+def process(titles, output=None):
     """
     Seek for the publication's citations.
-    :param publication: publication title
+    :param titles: publication titles
     :param output: output file object
     """
     log.info("Seeking for citations")
 
-    scholar_query = scholar.SearchScholarQuery()
-    scholar_query.set_words(publication)
-    scholar_query.set_num_page_results(1)
+    for publication in titles:
 
-    settings = scholar.ScholarSettings()
-    settings.set_citation_format(scholar.ScholarSettings.CITFORM_BIBTEX)
+        scholar_query = scholar.SearchScholarQuery()
+        scholar_query.set_words(publication)
+        scholar_query.set_num_page_results(1)
 
-    querier = scholar.ScholarQuerier()
-    querier.apply_settings(settings)
-    querier.send_query(scholar_query)
+        settings = scholar.ScholarSettings()
+        settings.set_citation_format(scholar.ScholarSettings.CITFORM_BIBTEX)
 
-    if len(querier.articles) == 0:
-        log.error("No entries found for the provided publication.")
-        exit(1)
-
-    article = querier.articles[0]
-    num_citations = article.attrs['num_citations'][0]
-    url_citations = article.attrs['url_citations'][0]
-
-    if num_citations == 0:
-        log.error("The publication has no citations.")
-        exit(1)
-
-    start = 0
-    # main publication
-    main_bib_entry = loader.parse_bib_entry(article.citation_data, article.attrs['num_citations'][0],
-                                            article.attrs['url'][0])
-    main_bib_entry.main_publication = True
-
-    entries = [main_bib_entry]
-
-    while start < num_citations:
-        citations_query = CitationsScholarQuery(url_citations, start=start)
         querier = scholar.ScholarQuerier()
         querier.apply_settings(settings)
-        querier.send_query(citations_query)
+        querier.send_query(scholar_query)
 
-        for article in querier.articles:
-            entries.append(loader.parse_bib_entry(article.citation_data, article.attrs['num_citations'][0],
-                                                  article.attrs['url'][0]))
+        if len(querier.articles) == 0:
+            log.warning("No entries found for the provided publication.")
+            continue
 
-        start += 20
-        time.sleep(1)
+        article = querier.articles[0]
+        num_citations = article.attrs['num_citations'][0]
+        url_citations = article.attrs['url_citations'][0]
 
-    for e in entries:
-        utils.write_output(e, output)
+        if num_citations == 0:
+            log.warning("The publication has no citations.")
+            continue
+
+        start = 0
+        # main publication
+        main_bib_entry = loader.parse_bib_entry(article.citation_data, article.attrs['num_citations'][0],
+                                                article.attrs['url'][0])
+        main_bib_entry.main_publication = True
+
+        utils.write_output(main_bib_entry, output)
+        entries = []
+
+        while start < num_citations:
+            citations_query = CitationsScholarQuery(url_citations, start=start)
+            querier = scholar.ScholarQuerier()
+            querier.apply_settings(settings)
+            querier.send_query(citations_query)
+
+            for article in querier.articles:
+                entries.append(loader.parse_bib_entry(article.citation_data, article.attrs['num_citations'][0],
+                                                      article.attrs['url'][0]))
+
+            start += 20
+            time.sleep(1)
+
+        # write to stdout or files
+        for e in entries:
+            utils.write_output(e, output)
 
 
 class CitationsScholarQuery(scholar.ScholarQuery):
