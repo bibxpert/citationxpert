@@ -26,7 +26,7 @@ from operations import author_map
 from operations import citations
 from operations import h_index
 from operations import self_reference
-from operations import area_interest
+# from operations import area_interest
 from tools import utils
 
 log = logging.getLogger(__name__)
@@ -125,6 +125,9 @@ def main():
     elif options.analysis_authorm:
         # Create authors map
         author_map.process(_check_input_file(options.input_file), output=output_file)
+
+    # elif options.analysis_area:
+    #     area_interest.process(_check_input_file(options.input_file), output=output_file, plot=options.plot)
 
     else:
         parser.print_help()
